@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>致特别的你</title>
+    <title>致 周依诺</title>
     <style>
         :root {
             --bg: #0a0a1a;
@@ -12,6 +12,10 @@
             --gold: #d4a853;
             --rose: #e8a0bf;
             --star: #f0e68c;
+            --sky: #a0c4e8;
+            --lavender: #c4a0e8;
+            --map-pin-gd: #e74c3c;
+            --map-pin-tj: #3498db;
         }
 
         * {
@@ -22,13 +26,14 @@
 
         body {
             background: var(--bg);
-            font-family: 'Georgia', 'Noto Serif SC', 'STSong', serif;
+            font-family: 'Georgia', 'Noto Serif SC', 'STSong', 'PingFang SC', 'Microsoft YaHei', serif;
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
             cursor: default;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            line-height: 1.7;
         }
 
         /* ============ Canvas 星空背景 ============ */
@@ -62,7 +67,7 @@
             text-align: center;
             animation: fadeSlideIn 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             width: 100%;
-            max-width: 600px;
+            max-width: 620px;
         }
         .stage.active {
             display: flex;
@@ -109,7 +114,36 @@
             }
         }
 
-        @keyframes shimmer {
+        @keyframes floatSlow {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        @keyframes heartbeat {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            15% {
+                transform: scale(1.25);
+            }
+            30% {
+                transform: scale(1);
+            }
+            45% {
+                transform: scale(1.18);
+            }
+            60% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes shimmerText {
             0% {
                 background-position: -200% center;
             }
@@ -118,14 +152,36 @@
             }
         }
 
+        @keyframes drawLine {
+            from {
+                stroke-dashoffset: 600;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
         /* ============ 标题 ============ */
         .title {
             font-size: clamp(1.6rem, 4vw, 2.6rem);
             color: var(--gold);
-            margin-bottom: 1.2rem;
+            margin-bottom: 0.6rem;
             letter-spacing: 0.15em;
             font-weight: normal;
             animation: glow 3s ease-in-out infinite;
+        }
+
+        .title-name {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            background: linear-gradient(135deg, #e8a0bf, #d4a853, #e8a0bf);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmerText 3s linear infinite;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.8rem;
         }
 
         .subtitle {
@@ -143,13 +199,14 @@
             border-radius: 20px;
             padding: 2.5rem 2rem;
             width: 100%;
-            max-width: 460px;
+            max-width: 480px;
             position: relative;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-            transition: box-shadow 0.6s;
+            transition: all 0.6s;
         }
         .envelope-card:hover {
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 40px rgba(212, 168, 83, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 40px rgba(212, 168, 83, 0.12), inset 0 1px 0
+                rgba(255, 255, 255, 0.04);
         }
 
         .seal {
@@ -160,7 +217,7 @@
             margin: 0 auto 1.5rem;
             position: relative;
             box-shadow: 0 4px 16px rgba(192, 57, 43, 0.45);
-            animation: float 4s ease-in-out infinite;
+            animation: floatSlow 4s ease-in-out infinite;
             cursor: pointer;
             transition: transform 0.3s;
         }
@@ -177,10 +234,18 @@
             color: #f0d0c0;
         }
 
+        .seal-hint {
+            color: #887766;
+            font-size: 0.8rem;
+            margin-top: 0.6rem;
+            animation: floatSlow 3s ease-in-out infinite;
+            animation-delay: -1s;
+        }
+
         /* ============ 按钮 ============ */
         .btn {
             display: inline-block;
-            padding: 0.9rem 2.8rem;
+            padding: 0.9rem 2.6rem;
             border-radius: 50px;
             border: 1.5px solid var(--gold);
             background: transparent;
@@ -217,67 +282,120 @@
         .explore-area {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 1.2rem;
             justify-content: center;
             margin: 1.5rem 0;
         }
 
         .memory-orb {
-            width: 64px;
-            height: 64px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.25), transparent 70%),
-                radial-gradient(circle, var(--rose), #5b2c4a);
             cursor: pointer;
             position: relative;
             transition: all 0.4s;
-            box-shadow: 0 0 18px rgba(232, 160, 191, 0.25);
-            animation: float 5s ease-in-out infinite;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             color: #fff;
+            box-shadow: 0 0 22px rgba(232, 160, 191, 0.3);
+        }
+        .memory-orb:nth-child(1) {
+            background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.3), transparent 70%),
+                radial-gradient(circle, #e8a0bf, #7b3a5a);
+            animation: float 5s ease-in-out infinite;
         }
         .memory-orb:nth-child(2) {
-            animation-delay: -1.5s;
-            background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.25), transparent 70%),
+            background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.3), transparent 70%),
                 radial-gradient(circle, #a0c4e8, #3a5a7c);
+            animation: float 5s ease-in-out infinite;
+            animation-delay: -1.5s;
         }
         .memory-orb:nth-child(3) {
-            animation-delay: -3s;
-            background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.25), transparent 70%),
+            background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.3), transparent 70%),
                 radial-gradient(circle, #c4a0e8, #4a2c6b);
+            animation: float 5s ease-in-out infinite;
+            animation-delay: -3s;
         }
         .memory-orb:hover {
             transform: scale(1.2);
-            box-shadow: 0 0 36px rgba(232, 160, 191, 0.55);
+            box-shadow: 0 0 40px rgba(232, 160, 191, 0.55);
             animation: pulse 0.8s ease-in-out infinite;
         }
         .memory-orb.revealed {
             transform: scale(0.85);
-            opacity: 0.5;
+            opacity: 0.45;
             pointer-events: none;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 6px rgba(255,255,255,0.08);
+        }
+
+        /* ============ 记忆标签 ============ */
+        .orb-label {
+            font-size: 0.75rem;
+            color: #b0a090;
+            margin-top: 0.3rem;
+            letter-spacing: 0.08em;
+        }
+        .orb-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
         }
 
         /* ============ 消息气泡 ============ */
         .message-reveal {
-            background: rgba(26, 26, 46, 0.9);
+            background: rgba(26, 26, 46, 0.92);
             border: 1px solid rgba(212, 168, 83, 0.4);
             border-radius: 16px;
-            padding: 1.5rem;
+            padding: 1.5rem 1.8rem;
             margin-top: 1rem;
             font-style: italic;
             color: #e8d5b0;
-            line-height: 1.8;
+            line-height: 2;
             display: none;
             animation: fadeSlideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-            max-width: 420px;
+            max-width: 440px;
             width: 100%;
+            font-size: 0.95rem;
         }
         .message-reveal.visible {
             display: block;
+        }
+
+        /* ============ 双城连线 ============ */
+        .cities-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        .city-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            letter-spacing: 0.06em;
+        }
+        .city-tag.gd {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: #f0a098;
+        }
+        .city-tag.tj {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.5);
+            color: #98c8f0;
+        }
+        .city-line {
+            color: #665544;
+            letter-spacing: 0.3em;
+            font-size: 0.85rem;
         }
 
         /* ============ 进度条 ============ */
@@ -307,20 +425,31 @@
         /* ============ 最终心形 ============ */
         .final-heart {
             font-size: 5rem;
-            animation: float 2.5s ease-in-out infinite, glow 3s ease-in-out infinite;
+            animation: heartbeat 2s ease-in-out infinite;
             cursor: pointer;
             transition: transform 0.3s;
+            display: inline-block;
         }
         .final-heart:hover {
-            transform: scale(1.2);
+            animation: heartbeat 0.6s ease-in-out infinite;
         }
 
         .final-message {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--gold);
             letter-spacing: 0.1em;
             margin-top: 1rem;
-            line-height: 2;
+            line-height: 2.2;
+        }
+
+        .final-message .her-name {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #e8a0bf, #d4a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            letter-spacing: 0.15em;
         }
 
         /* ============ 粒子爆发 ============ */
@@ -341,6 +470,18 @@
             }
         }
 
+        /* ============ 回忆时间轴小标签 ============ */
+        .timeline-badge {
+            display: inline-block;
+            font-size: 0.78rem;
+            color: #887766;
+            border: 1px solid rgba(180,160,140,0.35);
+            border-radius: 12px;
+            padding: 0.2rem 0.8rem;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+        }
+
         /* ============ 响应式 ============ */
         @media (max-width: 480px) {
             .envelope-card {
@@ -348,12 +489,22 @@
                 border-radius: 16px;
             }
             .memory-orb {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
+                width: 56px;
+                height: 56px;
+                font-size: 1.3rem;
             }
             .title {
-                font-size: 1.4rem;
+                font-size: 1.3rem;
+            }
+            .title-name {
+                font-size: 1.8rem;
+            }
+            .final-heart {
+                font-size: 3.5rem;
+            }
+            .message-reveal {
+                padding: 1.2rem 1rem;
+                font-size: 0.88rem;
             }
         }
     </style>
@@ -367,14 +518,19 @@
 
         <!-- ========== 阶段0：开场 ========== -->
         <div class="stage active" id="stage0">
-            <h1 class="title">✨ 致 特别的你</h1>
-            <p class="subtitle">— 一段藏在星空里的心意 —</p>
+            <h1 class="title">✨ 一封信</h1>
+            <p class="subtitle">— 穿越一千八百公里的星空 —</p>
             <div class="envelope-card">
                 <div class="seal" id="openSeal" title="轻轻点击打开"></div>
-                <p style="color:#b0a090; font-size:0.95rem;">有一封信，藏了很久…</p>
-                <p style="color:#887766; font-size:0.8rem; margin-top:0.6rem;">点击火漆印章，打开它</p>
+                <p style="color:#b0a090; font-size:0.95rem;">收信人：<span style="color:#e8a0bf;font-weight:bold;">周依诺</span></p>
+                <div class="cities-row">
+                    <span class="city-tag gd">📍 广东</span>
+                    <span class="city-line">———— ✈ ————</span>
+                    <span class="city-tag tj">📍 天津</span>
+                </div>
+                <p class="seal-hint">点击火漆印章，打开这封信</p>
             </div>
-            <div class="progress-dots" id="progressDots">
+            <div class="progress-dots" id="progressDots0">
                 <span class="progress-dot current"></span>
                 <span class="progress-dot"></span>
                 <span class="progress-dot"></span>
@@ -384,12 +540,21 @@
 
         <!-- ========== 阶段1：探索记忆 ========== -->
         <div class="stage" id="stage1">
-            <h1 class="title">💫 关于我们的三件事</h1>
-            <p class="subtitle">点击每一颗光球，发现藏在里面的心意</p>
+            <h1 class="title">💫 我们的故事</h1>
+            <p class="subtitle">— 点击每一颗光球，重温那些瞬间 —</p>
             <div class="explore-area">
-                <div class="memory-orb" data-orb="0" title="第一颗记忆">🌙</div>
-                <div class="memory-orb" data-orb="1" title="第二颗记忆">✨</div>
-                <div class="memory-orb" data-orb="2" title="第三颗记忆">💎</div>
+                <div class="orb-wrapper">
+                    <div class="memory-orb" data-orb="0" title="初见">🏫</div>
+                    <span class="orb-label">初见</span>
+                </div>
+                <div class="orb-wrapper">
+                    <div class="memory-orb" data-orb="1" title="心动">💓</div>
+                    <span class="orb-label">心动</span>
+                </div>
+                <div class="orb-wrapper">
+                    <div class="memory-orb" data-orb="2" title="珍藏">🌟</div>
+                    <span class="orb-label">珍藏</span>
+                </div>
             </div>
             <div class="message-reveal" id="revealMessage"></div>
             <button class="btn" id="btnAfterExplore" style="display:none;">继续前行 →</button>
@@ -401,18 +566,22 @@
             </div>
         </div>
 
-        <!-- ========== 阶段2：最后的问题 ========== -->
+        <!-- ========== 阶段2：告白 ========== -->
         <div class="stage" id="stage2">
-            <h1 class="title">💝 我想对你说</h1>
+            <h1 class="title">💝 想对你说的话</h1>
             <div class="envelope-card" style="text-align:center;">
                 <div class="final-heart" id="finalHeart">❤️</div>
-                <p class="final-message" id="finalMessage">
-                    你愿意<br>让我走进你的世界吗？
+                <p class="final-message">
+                    <span class="her-name">周依诺</span><br>
+                    从广东到天津，一千八百公里<br>
+                    但我的心，一直在你那里<br><br>
+                    你愿意<br>让我成为那个<br>穿越山海也想要见到的人吗？
                 </p>
-                <div style="display:flex;gap:1.5rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">
+                <div style="display:flex;gap:1.5rem;justify-content:center;margin-top:1.8rem;flex-wrap:wrap;">
                     <button class="btn primary" id="btnYes">💖 我愿意</button>
                     <button class="btn" id="btnThink">🤔 再想想</button>
                 </div>
+                <p style="color:#665544;font-size:0.75rem;margin-top:1.2rem;">（你可以把手机递给她，让她亲自选择）</p>
             </div>
             <div class="progress-dots" id="progressDots2">
                 <span class="progress-dot done"></span>
@@ -498,7 +667,6 @@
                     }
                 }
 
-                // Shooting stars
                 for (let i = shootingStars.length - 1; i >= 0; i--) {
                     const ss = shootingStars[i];
                     ss.trail.push({ x: ss.x, y: ss.y });
@@ -542,17 +710,37 @@
             let orbsRevealed = 0;
             const totalOrbs = 3;
 
+            // 三颗记忆光球的内容 —— 融入了你们的真实故事
             const orbMessages = [
-                "我记得第一次见到你的时候，<br>世界仿佛突然安静了几秒。<br><span style='color:#e8a0bf;'>——那是心动的起点。</span>",
-                "你笑起来的时候，<br>像是整个银河都在发光。<br><span style='color:#a0c4e8;'>——我偷偷收藏了无数次。</span>",
-                "每次和你聊天，<br>时间总是过得太快。<br><span style='color:#c4a0e8;'>——我希望能有更多这样的时光。</span>"
+                "<span class='timeline-badge'>🏫 高中 · 初见</span><br><br>" +
+                "刚升入高中的时候，我们第一次见面。<br>" +
+                "说实话，那时候我还没有意识到，<br>" +
+                "眼前这个叫<span style='color:#e8a0bf;font-weight:bold;'>周依诺</span>的女孩，<br>" +
+                "后来会成为我目光停留最久的人。<br>" +
+                "<span style='color:#e8a0bf;'>——故事的起点，总是悄无声息。</span>",
+
+                "<span class='timeline-badge'>💓 后来 · 心动</span><br><br>" +
+                "在一天天的相处中，<br>" +
+                "你的可爱和有趣的灵魂慢慢渗透进来。<br>" +
+                "不是某一瞬间的突然心动，<br>" +
+                "而是像潮水一样，一点一点地漫上来。<br>" +
+                "等我反应过来的时候，<br>" +
+                "心里已经全都是你了。<br>" +
+                "<span style='color:#a0c4e8;'>——原来喜欢是这样不知不觉的事。</span>",
+
+                "<span class='timeline-badge'>🌟 我们的 · 独家记忆</span><br><br>" +
+                "一起吃过饭，散过步，<br>" +
+                "一起打过游戏，经常聊天到深夜。<br>" +
+                "虽然现在你在<span style='color:#98c8f0;'>天津</span>，我在<span style='color:#f0a098;'>广东</span>，<br>" +
+                "隔着一千八百公里，<br>" +
+                "但那些回忆是我每天都会翻出来温习的宝藏。<br>" +
+                "<span style='color:#c4a0e8;'>——距离很远，但你一直很近。</span>"
             ];
 
             function switchStage(index) {
                 stages.forEach(s => s.classList.remove('active'));
                 stages[index].classList.add('active');
                 currentStage = index;
-                // 滚动到视图
                 stages[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
 
@@ -583,7 +771,11 @@
                     if (orbsRevealed >= totalOrbs) {
                         setTimeout(() => {
                             revealMessage.innerHTML =
-                                "💫 <span style='color:#d4a853;'>这三件事，只是万千心意的冰山一角……</span>";
+                                "<div style='text-align:center;'>" +
+                                "<span style='font-size:2rem;display:block;margin-bottom:0.8rem;'>✨</span>" +
+                                "<span style='color:#d4a853;font-size:1.05rem;'>这三段回忆，只是我们故事的开篇……</span><br>" +
+                                "<span style='color:#b0a090;font-size:0.9rem;'>接下来，才是我想说的最重要的部分。</span>" +
+                                "</div>";
                             btnAfterExplore.style.display = 'inline-block';
                             btnAfterExplore.scrollIntoView({ behavior: 'smooth' });
                         }, 600);
@@ -603,7 +795,6 @@
 
             finalHeart.addEventListener('click', () => {
                 burstParticles(finalHeart, 40);
-                // 心形放大抖动
                 finalHeart.style.transform = 'scale(1.4)';
                 setTimeout(() => { finalHeart.style.transform = ''; }, 300);
             });
@@ -611,19 +802,25 @@
             btnYes.addEventListener('click', () => {
                 switchStage(3);
                 responseCard.innerHTML = `
-                    <div style="font-size:4rem;animation:float 2s ease-in-out infinite;">💖</div>
-                    <h2 style="color:#d4a853;margin:1rem 0;letter-spacing:0.1em;">谢谢你</h2>
-                    <p style="line-height:2;color:#e0d5c1;font-size:1.1rem;">
+                    <div style="font-size:4rem;animation:heartbeat 1.5s ease-in-out infinite;">💖</div>
+                    <h2 style="color:#d4a853;margin:1rem 0;letter-spacing:0.1em;">谢谢你，依诺</h2>
+                    <p style="line-height:2.2;color:#e0d5c1;font-size:1.05rem;">
+                        从高中教室到南北两座城市，<br>
+                        从广东到天津的一千八百公里，<br>
+                        都无法阻挡我想要走向你的脚步。<br><br>
                         这一刻，星空为我们见证。<br>
-                        我会珍惜这份心意，<br>
-                        用时间去书写属于我们的故事。
+                        我会用时间，去书写属于我们的故事。
                     </p>
-                    <p style="color:#a09080;margin-top:1rem;font-size:0.9rem;">
+                    <div class="cities-row" style="margin-top:1rem;">
+                        <span class="city-tag gd">📍 广东</span>
+                        <span style="color:#d4a853;">❤️</span>
+                        <span class="city-tag tj">📍 天津</span>
+                    </div>
+                    <p style="color:#a09080;margin-top:1rem;font-size:0.85rem;">
                         —— 2026年9月24日 · 星空之下
                     </p>
                 `;
                 burstParticles(responseCard, 60);
-                // 全局撒花效果
                 setTimeout(() => burstParticles(responseCard, 50), 500);
                 setTimeout(() => burstParticles(responseCard, 40), 1000);
             });
@@ -631,17 +828,19 @@
             btnThink.addEventListener('click', () => {
                 switchStage(3);
                 responseCard.innerHTML = `
-                    <div style="font-size:4rem;animation:float 2.5s ease-in-out infinite;">🌷</div>
-                    <h2 style="color:#d4a853;margin:1rem 0;letter-spacing:0.1em;">没关系</h2>
-                    <p style="line-height:2;color:#e0d5c1;font-size:1.1rem;">
+                    <div style="font-size:4rem;animation:floatSlow 2.5s ease-in-out infinite;">🌷</div>
+                    <h2 style="color:#d4a853;margin:1rem 0;letter-spacing:0.1em;">没关系，依诺</h2>
+                    <p style="line-height:2.2;color:#e0d5c1;font-size:1.05rem;">
                         无论你的答案是什么，<br>
-                        我都感谢你愿意停留在此刻。<br>
-                        这份心意不会改变。
+                        我都感谢你出现在我的生命里。<br>
+                        从高中到现在，那些一起走过的日子，<br>
+                        已经是我最珍贵的礼物。
                     </p>
                     <p style="color:#a09080;margin-top:1rem;font-size:0.9rem;">
-                        慢慢来，我会一直在这里。
+                        慢慢来，我会一直在这里。<br>
+                        毕竟——广东到天津，也不过是一张机票的距离。
                     </p>
-                    <button class="btn" onclick="location.reload()" style="margin-top:1rem;">🔄 再看一次</button>
+                    <button class="btn" onclick="location.reload()" style="margin-top:1.2rem;">🔄 再看一次</button>
                 `;
                 burstParticles(responseCard, 35);
             });
@@ -651,17 +850,18 @@
                 const rect = element.getBoundingClientRect();
                 const cx = rect.left + rect.width / 2;
                 const cy = rect.top + rect.height / 2;
-                const colors = ['#d4a853', '#e8a0bf', '#f0e68c', '#a0c4e8', '#c4a0e8', '#ffb3b3', '#fff'];
+                const colors = ['#d4a853', '#e8a0bf', '#f0e68c', '#a0c4e8', '#c4a0e8', '#ffb3b3', '#fff',
+                '#f0a098', '#98c8f0'];
                 const fragment = document.createDocumentFragment();
 
                 for (let i = 0; i < count; i++) {
                     const particle = document.createElement('span');
                     particle.className = 'particle-burst';
-                    const size = Math.random() * 8 + 4;
+                    const size = Math.random() * 8 + 3;
                     const angle = Math.random() * Math.PI * 2;
-                    const distance = Math.random() * 100 + 40;
+                    const distance = Math.random() * 110 + 40;
                     const dx = Math.cos(angle) * distance;
-                    const dy = Math.sin(angle) * distance - 40;
+                    const dy = Math.sin(angle) * distance - 50;
                     particle.style.cssText = `
                         left:${cx}px;
                         top:${cy}px;
@@ -686,10 +886,23 @@
                 }, 1800);
             }
 
-            // ==================== 初始状态 ====================
-            console.log('💫 星空表白页面已就绪');
-            console.log('👆 点击火漆印章开始这段探索吧~');
-            console.log('💝 愿每一份真心都被温柔以待。');
+            // ==================== 键盘导航（可选） ====================
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    if (currentStage === 0) {
+                        burstParticles(openSeal);
+                        setTimeout(() => switchStage(1), 400);
+                    } else if (currentStage === 1 && orbsRevealed >= totalOrbs) {
+                        switchStage(2);
+                    }
+                }
+            });
+
+            console.log('💫 致周依诺的星空表白页面已就绪');
+            console.log('👆 点击火漆印章开始这段跨越山海的探索吧~');
+            console.log('📍 广东 → 天津 | 一千八百公里 | 一颗真心');
+            console.log('💝 愿每一份跨越距离的心意，都能抵达对的人。');
 
         })();
     </script>

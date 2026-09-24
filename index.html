@@ -1,372 +1,697 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>为你点亮的世界</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0a140a;
-  font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;
-  touch-action:none;-webkit-user-select:none;user-select:none}
-canvas{display:block;width:100%;height:100%}
-#btnAct{position:fixed;right:28px;bottom:90px;width:72px;height:72px;
-  border-radius:50%;border:2.5px solid rgba(255,255,255,.5);
-  background:rgba(255,255,255,.1);color:#fff;font-size:15px;letter-spacing:2px;
-  display:none;align-items:center;justify-content:center;
-  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  transition:transform .12s,background .2s,border-color .2s,box-shadow .3s;z-index:10}
-#btnAct.show{display:flex}
-#btnAct.ready{background:rgba(180,255,160,.3);border-color:rgba(180,255,140,.9);
-  box-shadow:0 0 20px rgba(140,255,120,.45);animation:pulse 1.4s ease-in-out infinite}
-#btnAct:active{transform:scale(.88)}
-@keyframes pulse{0%,100%{box-shadow:0 0 14px rgba(140,255,120,.3)}
-  50%{box-shadow:0 0 28px rgba(140,255,120,.7)}}
-#dlg{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);
-  width:min(680px,92vw);background:rgba(8,20,8,.88);
-  border:1px solid rgba(180,255,180,.18);border-radius:16px;
-  padding:20px 24px;color:#e8f5e0;font-size:17px;line-height:1.85;
-  opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:20}
-#dlg.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
-#dlg .who{font-size:13px;color:rgba(200,255,200,.45);margin-bottom:6px}
-#dlg .tap{font-size:12px;color:rgba(200,255,200,.35);text-align:right;margin-top:8px}
-.ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;z-index:30;background:rgba(4,12,4,.92);
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:opacity .6s}
-.ov.hide{opacity:0;pointer-events:none}
-.ov h1{color:#d4ffd4;font-size:clamp(26px,6vw,42px);font-weight:700;letter-spacing:2px}
-.ov p{color:rgba(200,240,200,.6);margin-top:14px;font-size:15px;text-align:center;line-height:1.9}
-.ov .sub{color:rgba(200,240,200,.4);font-size:13px;margin-top:28px}
-#btnStart{margin-top:32px;padding:13px 44px;border-radius:30px;border:none;
-  background:linear-gradient(135deg,#5dbb63,#a8e6a3);color:#0a1f0a;font-size:17px;
-  letter-spacing:3px;cursor:pointer;box-shadow:0 6px 24px rgba(90,200,90,.35);
-  position:relative;z-index:31}
-#btnStart:active{transform:scale(.95)}
-#endBox{text-align:center}
-#endBox h1{color:#c8ffc8;text-shadow:0 0 40px rgba(100,220,100,.45)}
-#endBox .big{font-size:clamp(20px,5vw,30px);color:#e8f5e0;margin-top:22px;line-height:1.9}
-#endBox .heart{font-size:56px;margin-top:18px;animation:beat 1s infinite}
-@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>致特别的你</title>
+    <style>
+        :root {
+            --bg: #0a0a1a;
+            --card: #1a1a2e;
+            --text: #e0d5c1;
+            --gold: #d4a853;
+            --rose: #e8a0bf;
+            --star: #f0e68c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Georgia', 'Noto Serif SC', 'STSong', serif;
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: default;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ============ Canvas 星空背景 ============ */
+        #starCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ============ 主容器 ============ */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        /* ============ 阶段容器 ============ */
+        .stage {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: fadeSlideIn 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            width: 100%;
+            max-width: 600px;
+        }
+        .stage.active {
+            display: flex;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.06);
+            }
+        }
+
+        @keyframes glow {
+            0%,
+            100% {
+                text-shadow: 0 0 8px rgba(212, 168, 83, 0.4);
+            }
+            50% {
+                text-shadow: 0 0 22px rgba(212, 168, 83, 0.9), 0 0 40px rgba(232, 160, 191, 0.5);
+            }
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        /* ============ 标题 ============ */
+        .title {
+            font-size: clamp(1.6rem, 4vw, 2.6rem);
+            color: var(--gold);
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.15em;
+            font-weight: normal;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #a09080;
+            margin-bottom: 2.5rem;
+            letter-spacing: 0.2em;
+            opacity: 0.8;
+        }
+
+        /* ============ 信封/卡片 ============ */
+        .envelope-card {
+            background: var(--card);
+            border: 1px solid rgba(212, 168, 83, 0.25);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 460px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            transition: box-shadow 0.6s;
+        }
+        .envelope-card:hover {
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 40px rgba(212, 168, 83, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        .seal {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, #c0392b, #7b1f1f);
+            margin: 0 auto 1.5rem;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(192, 57, 43, 0.45);
+            animation: float 4s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .seal:hover {
+            transform: scale(1.12);
+        }
+        .seal::after {
+            content: '♥';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.6rem;
+            color: #f0d0c0;
+        }
+
+        /* ============ 按钮 ============ */
+        .btn {
+            display: inline-block;
+            padding: 0.9rem 2.8rem;
+            border-radius: 50px;
+            border: 1.5px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            font-size: 1rem;
+            letter-spacing: 0.12em;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.35s;
+            position: relative;
+            overflow: hidden;
+            margin-top: 1.5rem;
+        }
+        .btn:hover {
+            background: rgba(212, 168, 83, 0.1);
+            box-shadow: 0 0 28px rgba(212, 168, 83, 0.3);
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn.primary {
+            background: linear-gradient(135deg, #b8860b, #d4a853);
+            color: #1a1a1a;
+            border: none;
+            font-weight: bold;
+        }
+        .btn.primary:hover {
+            background: linear-gradient(135deg, #c99718, #e0b860);
+            box-shadow: 0 0 36px rgba(212, 168, 83, 0.5);
+        }
+
+        /* ============ 探索区域 ============ */
+        .explore-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .memory-orb {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.25), transparent 70%),
+                radial-gradient(circle, var(--rose), #5b2c4a);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.4s;
+            box-shadow: 0 0 18px rgba(232, 160, 191, 0.25);
+            animation: float 5s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        .memory-orb:nth-child(2) {
+            animation-delay: -1.5s;
+            background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.25), transparent 70%),
+                radial-gradient(circle, #a0c4e8, #3a5a7c);
+        }
+        .memory-orb:nth-child(3) {
+            animation-delay: -3s;
+            background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.25), transparent 70%),
+                radial-gradient(circle, #c4a0e8, #4a2c6b);
+        }
+        .memory-orb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 36px rgba(232, 160, 191, 0.55);
+            animation: pulse 0.8s ease-in-out infinite;
+        }
+        .memory-orb.revealed {
+            transform: scale(0.85);
+            opacity: 0.5;
+            pointer-events: none;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+
+        /* ============ 消息气泡 ============ */
+        .message-reveal {
+            background: rgba(26, 26, 46, 0.9);
+            border: 1px solid rgba(212, 168, 83, 0.4);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-style: italic;
+            color: #e8d5b0;
+            line-height: 1.8;
+            display: none;
+            animation: fadeSlideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            max-width: 420px;
+            width: 100%;
+        }
+        .message-reveal.visible {
+            display: block;
+        }
+
+        /* ============ 进度条 ============ */
+        .progress-dots {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 2rem 0 1rem;
+        }
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #3a3050;
+            transition: all 0.4s;
+        }
+        .progress-dot.done {
+            background: var(--gold);
+            box-shadow: 0 0 10px var(--gold);
+        }
+        .progress-dot.current {
+            background: var(--rose);
+            box-shadow: 0 0 14px var(--rose);
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        /* ============ 最终心形 ============ */
+        .final-heart {
+            font-size: 5rem;
+            animation: float 2.5s ease-in-out infinite, glow 3s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .final-heart:hover {
+            transform: scale(1.2);
+        }
+
+        .final-message {
+            font-size: 1.3rem;
+            color: var(--gold);
+            letter-spacing: 0.1em;
+            margin-top: 1rem;
+            line-height: 2;
+        }
+
+        /* ============ 粒子爆发 ============ */
+        .particle-burst {
+            position: fixed;
+            pointer-events: none;
+            z-index: 100;
+            animation: burstUp 1.5s ease-out forwards;
+        }
+        @keyframes burstUp {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(0);
+            }
+        }
+
+        /* ============ 响应式 ============ */
+        @media (max-width: 480px) {
+            .envelope-card {
+                padding: 1.8rem 1.2rem;
+                border-radius: 16px;
+            }
+            .memory-orb {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            .title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- 星空画布 -->
+    <canvas id="starCanvas"></canvas>
 
-<canvas id="c"></canvas>
-<div id="btnAct">触碰</div>
-<div id="dlg"><div class="who" id="dlgWho"></div><div id="dlgTxt"></div><div class="tap">轻触继续</div></div>
+    <!-- 主容器 -->
+    <div class="main-container" id="mainContainer">
 
-<div class="ov" id="ovStart">
-  <h1>为你点亮的森林</h1>
-  <p>拖动左下角摇杆走路 · 靠近发光的物件按「触碰」<br>把它们一个一个点亮</p>
-  <button id="btnStart">开始探索</button>
-  <div class="sub">电脑也可用 WASD / 方向键 + 空格</div>
-</div>
+        <!-- ========== 阶段0：开场 ========== -->
+        <div class="stage active" id="stage0">
+            <h1 class="title">✨ 致 特别的你</h1>
+            <p class="subtitle">— 一段藏在星空里的心意 —</p>
+            <div class="envelope-card">
+                <div class="seal" id="openSeal" title="轻轻点击打开"></div>
+                <p style="color:#b0a090; font-size:0.95rem;">有一封信，藏了很久…</p>
+                <p style="color:#887766; font-size:0.8rem; margin-top:0.6rem;">点击火漆印章，打开它</p>
+            </div>
+            <div class="progress-dots" id="progressDots">
+                <span class="progress-dot current"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+            </div>
+        </div>
 
-<div class="ov hide" id="ovEnd">
-  <div id="endBox">
-    <h1 id="endTitle"></h1>
-    <div class="big" id="endText"></div>
-    <div class="heart">💚</div>
-    <div class="sub" id="endSub"></div>
-  </div>
-</div>
+        <!-- ========== 阶段1：探索记忆 ========== -->
+        <div class="stage" id="stage1">
+            <h1 class="title">💫 关于我们的三件事</h1>
+            <p class="subtitle">点击每一颗光球，发现藏在里面的心意</p>
+            <div class="explore-area">
+                <div class="memory-orb" data-orb="0" title="第一颗记忆">🌙</div>
+                <div class="memory-orb" data-orb="1" title="第二颗记忆">✨</div>
+                <div class="memory-orb" data-orb="2" title="第三颗记忆">💎</div>
+            </div>
+            <div class="message-reveal" id="revealMessage"></div>
+            <button class="btn" id="btnAfterExplore" style="display:none;">继续前行 →</button>
+            <div class="progress-dots" id="progressDots1">
+                <span class="progress-dot done"></span>
+                <span class="progress-dot current"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+            </div>
+        </div>
 
-<script>
-const CONFIG = {
-  herName: '她',
-  yourName: '我',
-  question: '做我女朋友好吗？',
-  mapW: 2400, mapH: 1800,
-  speed: 3.4,
-  points: [
-    { label:'旧信箱', x:380,  y:1420, lines:[
-      '那天你回头笑了一下，我记了好久。',
-      '后来每次想起，心里都像被轻轻拍了一下。']},
-    { label:'长椅',   x:760,  y:1560, lines:[
-      '我常坐在这张椅子上发呆。',
-      '想着——要是你在旁边就好了。']},
-    { label:'秋千',   x:1200, y:1380, lines:[
-      '你说话的时候眼睛会亮。',
-      '像夏天的星星掉进了眼睛里。']},
-    { label:'路灯',   x:1620, y:1500, lines:[
-      '有天晚上我走这条路，忽然很想给你发消息。',
-      '打了又删，删了又打，最后还是没发出去。']},
-    { label:'花丛',   x:1900, y:1200, lines:[
-      '你喜欢的颜色，我都偷偷记住了。',
-      '所以这片花，我想第一个指给你看。']},
-    { label:'纸飞机', x:1500, y:860,  lines:[
-      '有些话写了又删，最后折成了纸飞机。',
-      '它飞不远，但它是往你那边飞的。']},
-    { label:'喷泉',   x:900,  y:700,  lines:[
-      '我把它们一个一个点亮。',
-      '就像认识你的每一天，世界都比前一天亮一点。']},
-    { label:'山顶',   x:500,  y:420,  lines:[
-      '最后一个了。',
-      '其实前面那些，都是在为这一句做准备——',
-      '我喜欢你。']}
-  ]
-};
+        <!-- ========== 阶段2：最后的问题 ========== -->
+        <div class="stage" id="stage2">
+            <h1 class="title">💝 我想对你说</h1>
+            <div class="envelope-card" style="text-align:center;">
+                <div class="final-heart" id="finalHeart">❤️</div>
+                <p class="final-message" id="finalMessage">
+                    你愿意<br>让我走进你的世界吗？
+                </p>
+                <div style="display:flex;gap:1.5rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">
+                    <button class="btn primary" id="btnYes">💖 我愿意</button>
+                    <button class="btn" id="btnThink">🤔 再想想</button>
+                </div>
+            </div>
+            <div class="progress-dots" id="progressDots2">
+                <span class="progress-dot done"></span>
+                <span class="progress-dot done"></span>
+                <span class="progress-dot done"></span>
+                <span class="progress-dot current"></span>
+            </div>
+        </div>
 
-const cvs = document.getElementById('c');
-const ctx = cvs.getContext('2d');
-const btnAct = document.getElementById('btnAct');
-const dlg = document.getElementById('dlg');
-const dlgWho = document.getElementById('dlgWho');
-const dlgTxt = document.getElementById('dlgTxt');
-const ovStart = document.getElementById('ovStart');
-const ovEnd = document.getElementById('ovEnd');
-const btnStart = document.getElementById('btnStart');
+        <!-- ========== 阶段3：回应 ========== -->
+        <div class="stage" id="stage3">
+            <div class="envelope-card" style="text-align:center;" id="responseCard">
+                <!-- 动态填充 -->
+            </div>
+        </div>
 
-let W, H;
-function resize(){ W = cvs.width = innerWidth; H = cvs.height = innerHeight; }
-addEventListener('resize', resize); resize();
+    </div>
 
-const MAP = { w: CONFIG.mapW, h: CONFIG.mapH };
-let started = false, ended = false;
-let nextIdx = 0;
-let cam = { x: 0, y: 0 };
-const P = { x: MAP.w - 260, y: MAP.h - 260, r: 14 };
-const pts = CONFIG.points;
-const trees = [], flowers = [], fireflies = [];
+    <script>
+        (function() {
+            // ==================== 星空背景 ====================
+            const canvas = document.getElementById('starCanvas');
+            const ctx = canvas.getContext('2d');
+            let stars = [];
+            let shootingStars = [];
 
-function dist(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                initStars();
+            });
 
-function isNearAnything(x, y, minR){
-  if (dist({x,y}, P) < minR + 120) return true;
-  for (const p of pts) if (dist({x,y}, p) < minR + 90) return true;
-  return false;
-}
+            function initStars() {
+                stars = [];
+                const count = Math.floor((canvas.width * canvas.height) / 1800);
+                for (let i = 0; i < count; i++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: Math.random() * 1.8 + 0.3,
+                        twinkleSpeed: Math.random() * 0.015 + 0.005,
+                        twinkleOffset: Math.random() * Math.PI * 2,
+                        baseAlpha: Math.random() * 0.6 + 0.4,
+                    });
+                }
+            }
+            initStars();
 
-function makeForest(){
-  trees.length = 0; flowers.length = 0;
-  const N = 420;
-  for (let i = 0; i < N; i++){
-    const x = Math.random() * MAP.w, y = Math.random() * MAP.h;
-    if (isNearAnything(x, y, 70)) continue;
-    const big = Math.random() < 0.75;
-    const r = big ? 42 + Math.random()*38 : 22 + Math.random()*18;
-    const h = 100 + Math.random()*50;
-    const s = 28 + Math.random()*22;
-    const l = 10 + Math.random()*14;
-    trees.push({ x, y, r,
-      trunkW: big ? 10 + Math.random()*6 : 6 + Math.random()*4,
-      trunkH: big ? 28 + Math.random()*16 : 14 + Math.random()*10,
-      c: `hsl(${h|0},${s|0}%,${l|0}%)`,
-      c2: `hsl(${h+8|0},${s-6|0}%,${l+8|0}%)`,
-      sway: Math.random()*Math.PI*2 });
-  }
-  for (let i = 0; i < 600; i++){
-    const x = Math.random()*MAP.w, y = Math.random()*MAP.h;
-    if (isNearAnything(x, y, 40)) continue;
-    flowers.push({ x, y, r: 1.5+Math.random()*2.5,
-      c: Math.random()<.3 ? `hsla(${40+Math.random()*30},70%,60%,.5)`
-                           : `hsla(${110+Math.random()*40},40%,55%,.35)` });
-  }
-  for (let i = 0; i < 70; i++){
-    fireflies.push({ x: Math.random()*MAP.w, y: Math.random()*MAP.h,
-      vx:(Math.random()-.5)*.4, vy:(Math.random()-.5)*.4,
-      phase: Math.random()*Math.PI*2, speed: .02+Math.random()*.03 });
-  }
-}
-makeForest();
+            function spawnShootingStar() {
+                if (Math.random() < 0.015) {
+                    shootingStars.push({
+                        x: Math.random() * canvas.width * 0.8,
+                        y: Math.random() * canvas.height * 0.5,
+                        vx: (Math.random() - 0.3) * 4 + 3,
+                        vy: (Math.random() - 0.3) * 1.5 + 1.5,
+                        life: 1,
+                        decay: Math.random() * 0.015 + 0.012,
+                        trail: [],
+                    });
+                }
+            }
 
-const keys = {};
-addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if(e.key===' ') e.preventDefault(); });
-addEventListener('keyup',   e => { keys[e.key.toLowerCase()] = false; });
+            function drawStars() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const time = Date.now() * 0.001;
 
-let joy = { on:false, id:null, sx:0, sy:0, dx:0, dy:0 };
-cvs.addEventListener('touchstart', e=>{
-  if (!started || ended) return;
-  for (const t of e.changedTouches){
-    if (t.clientX < W*.45 && !joy.on){
-      joy.on=true; joy.id=t.identifier; joy.sx=t.clientX; joy.sy=t.clientY; joy.dx=joy.dy=0;
-    }
-  }
-},{passive:true});
-cvs.addEventListener('touchmove', e=>{
-  for (const t of e.changedTouches){
-    if (t.identifier===joy.id){
-      let dx=t.clientX-joy.sx, dy=t.clientY-joy.sy;
-      const m=50, d=Math.hypot(dx,dy);
-      if(d>m){dx=dx/d*m; dy=dy/d*m;}
-      joy.dx=dx/m; joy.dy=dy/m;
-    }
-  }
-},{passive:true});
-const endJoy = e=>{ for(const t of e.changedTouches) if(t.identifier===joy.id){joy.on=false;joy.id=null;joy.dx=joy.dy=0;} };
-cvs.addEventListener('touchend', endJoy,{passive:true});
-cvs.addEventListener('touchcancel', endJoy,{passive:true});
+                for (const s of stars) {
+                    const alpha = s.baseAlpha + Math.sin(time * s.twinkleSpeed * 60 + s.twinkleOffset) * 0.35;
+                    const finalAlpha = Math.max(0.15, Math.min(1, alpha));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(240,230,200,${finalAlpha})`;
+                    ctx.fill();
+                    if (s.r > 1.2 && finalAlpha > 0.75) {
+                        ctx.beginPath();
+                        ctx.arc(s.x, s.y, s.r * 2.2, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(240,230,210,${finalAlpha * 0.12})`;
+                        ctx.fill();
+                    }
+                }
 
-let dlgOpen=false, dlgLines=[], li=0, ci=0, typeTimer=0, typing=false;
-const TYPE_MS = 55;
+                // Shooting stars
+                for (let i = shootingStars.length - 1; i >= 0; i--) {
+                    const ss = shootingStars[i];
+                    ss.trail.push({ x: ss.x, y: ss.y });
+                    if (ss.trail.length > 20) ss.trail.shift();
+                    ss.x += ss.vx;
+                    ss.y += ss.vy;
+                    ss.life -= ss.decay;
 
-function openDialog(lines){
-  dlgLines = lines.slice(); li = 0; ci = 0; typing = true; typeTimer = 0;
-  dlgWho.textContent = CONFIG.herName;
-  dlgTxt.textContent = '';
-  dlg.classList.add('on'); dlgOpen = true;
-  btnAct.classList.remove('show','ready');
-}
-function advanceDialog(){
-  if (!dlgOpen) return;
-  if (typing){ ci = dlgLines[li].length; typing = false; dlgTxt.textContent = dlgLines[li]; return; }
-  li++;
-  if (li >= dlgLines.length){ closeDialog(); onPointDone(); return; }
-  ci = 0; typing = true; typeTimer = 0; dlgTxt.textContent = '';
-}
-dlg.addEventListener('click', advanceDialog);
-dlg.addEventListener('touchend', e=>{ e.stopPropagation(); advanceDialog(); },{passive:true});
+                    if (ss.life <= 0 || ss.x > canvas.width + 50 || ss.y > canvas.height + 50) {
+                        shootingStars.splice(i, 1);
+                        continue;
+                    }
 
-function closeDialog(){ dlg.classList.remove('on'); dlgOpen=false; typing=false; }
+                    ctx.strokeStyle = `rgba(255,255,240,${ss.life})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(ss.trail[0]?.x || ss.x, ss.trail[0]?.y || ss.y);
+                    for (let j = 1; j < ss.trail.length; j++) {
+                        ctx.lineTo(ss.trail[j].x, ss.trail[j].y);
+                    }
+                    ctx.lineTo(ss.x, ss.y);
+                    ctx.stroke();
 
-function onPointDone(){
-  nextIdx++;
-  if (nextIdx >= pts.length){ setTimeout(showEnding, 400); return; }
-}
+                    ctx.beginPath();
+                    ctx.arc(ss.x, ss.y, 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255,255,255,${ss.life})`;
+                    ctx.fill();
+                }
+            }
 
-function tryAct(){
-  if (dlgOpen || ended || nextIdx >= pts.length) return;
-  const p = pts[nextIdx];
-  if (dist(P, p) < 90) openDialog(p.lines);
-}
-btnAct.addEventListener('click', tryAct);
-btnAct.addEventListener('touchend', e=>{ e.preventDefault(); tryAct(); },{passive:false});
+            function animateStars() {
+                spawnShootingStar();
+                drawStars();
+                requestAnimationFrame(animateStars);
+            }
+            animateStars();
 
-function showEnding(){
-  ended = true;
-  document.getElementById('endTitle').textContent = CONFIG.question;
-  document.getElementById('endText').textContent = `—— ${CONFIG.yourName}`;
-  document.getElementById('endSub').textContent = '这片森林，从此只为你亮着。';
-  ovEnd.classList.remove('hide');
-  btnAct.classList.remove('show','ready');
-}
+            // ==================== 阶段管理 ====================
+            const stages = document.querySelectorAll('.stage');
+            let currentStage = 0;
+            let orbsRevealed = 0;
+            const totalOrbs = 3;
 
-function update(){
-  if (!started || ended || dlgOpen) return;
-  let mx=0, my=0;
-  if (keys['w']||keys['arrowup']) my-=1;
-  if (keys['s']||keys['arrowdown']) my+=1;
-  if (keys['a']||keys['arrowleft']) mx-=1;
-  if (keys['d']||keys['arrowright']) mx+=1;
-  if (joy.on){ mx+=joy.dx; my+=joy.dy; }
-  const d=Math.hypot(mx,my); if(d>1){mx/=d;my/=d;}
-  P.x = Math.max(P.r, Math.min(MAP.w-P.r, P.x + mx*CONFIG.speed));
-  P.y = Math.max(P.r, Math.min(MAP.h-P.r, P.y + my*CONFIG.speed));
-  cam.x += (P.x - W/2 - cam.x)*.1;
-  cam.y += (P.y - H/2 - cam.y)*.1;
-  cam.x = Math.max(0, Math.min(MAP.w-W, cam.x));
-  cam.y = Math.max(0, Math.min(MAP.h-H, cam.y));
-  if (nextIdx < pts.length){
-    const near = dist(P, pts[nextIdx]) < 90;
-    btnAct.classList.toggle('show', near);
-    btnAct.classList.toggle('ready', near);
-  } else { btnAct.classList.remove('show','ready'); }
-  if (dlgOpen && typing){
-    typeTimer += 16;
-    while(typeTimer>=TYPE_MS && ci<dlgLines[li].length){ ci++; dlgTxt.textContent=dlgLines[li].slice(0,ci); typeTimer-=TYPE_MS; }
-  }
-  for (const f of fireflies){
-    f.phase += f.speed;
-    f.x += f.vx + Math.sin(f.phase)*.3;
-    f.y += f.vy + Math.cos(f.phase*.7)*.3;
-    if (f.x<0) f.x+=MAP.w; if (f.x>MAP.w) f.x-=MAP.w;
-    if (f.y<0) f.y+=MAP.h; if (f.y>MAP.h) f.y-=MAP.h;
-  }
-}
+            const orbMessages = [
+                "我记得第一次见到你的时候，<br>世界仿佛突然安静了几秒。<br><span style='color:#e8a0bf;'>——那是心动的起点。</span>",
+                "你笑起来的时候，<br>像是整个银河都在发光。<br><span style='color:#a0c4e8;'>——我偷偷收藏了无数次。</span>",
+                "每次和你聊天，<br>时间总是过得太快。<br><span style='color:#c4a0e8;'>——我希望能有更多这样的时光。</span>"
+            ];
 
-function draw(){
-  ctx.clearRect(0,0,W,H);
-  ctx.save();
-  ctx.translate(Math.round(-cam.x), Math.round(-cam.y));
-  const prog = nextIdx / pts.length;
-  const g = ctx.createLinearGradient(0,0,0,MAP.h);
-  const lo = 8+prog*7|0, hi = 16+prog*10|0;
-  g.addColorStop(0, `hsl(130,28%,${lo}%)`);
-  g.addColorStop(.5,`hsl(140,30%,${lo+3}%)`);
-  g.addColorStop(1, `hsl(120,26%,${hi}%)`);
-  ctx.fillStyle=g; ctx.fillRect(0,0,MAP.w,MAP.h);
-  for (const f of flowers){ ctx.fillStyle=f.c; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill(); }
-  if (nextIdx>0 && nextIdx<pts.length){
-    ctx.strokeStyle=`rgba(160,255,150,${.06+prog*.06})`;
-    ctx.lineWidth=18; ctx.lineJoin='round'; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(pts[nextIdx-1].x,pts[nextIdx-1].y); ctx.lineTo(pts[nextIdx].x,pts[nextIdx].y); ctx.stroke();
-  }
-  const t = performance.now()*.001;
-  for (let i=0;i<pts.length;i++){
-    const p=pts[i], done=i<nextIdx, cur=i===nextIdx;
-    const pulse = 1+.15*Math.sin(t*2.4+i);
-    const R = done? 44 : (cur? 52*pulse : 30);
-    const alpha = done?.7 : (cur?.85:.25);
-    const grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,R*2.2);
-    grd.addColorStop(0,`rgba(190,255,170,${alpha})`);
-    grd.addColorStop(.45,`rgba(120,220,110,${alpha*.45})`);
-    grd.addColorStop(1,'rgba(60,140,60,0)');
-    ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(p.x,p.y,R*2.2,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=done?'#d4ffd4':(cur?'#fff':'rgba(200,255,200,.5)');
-    ctx.beginPath(); ctx.arc(p.x,p.y,done?7:6,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=done?'rgba(220,255,220,.7)':'rgba(200,255,200,.55)';
-    ctx.font='600 14px "PingFang SC","Microsoft YaHei",sans-serif';
-    ctx.textAlign='center'; ctx.fillText(p.label, p.x, p.y-30);
-    if(!done){ ctx.font='12px sans-serif'; ctx.fillStyle='rgba(200,255,200,.4)';
-      ctx.fillText(`${i+1} / ${pts.length}`, p.x, p.y+28); }
-  }
-  trees.sort((a,b)=>a.y-b.y);
-  for (const tr of trees){
-    const sw = Math.sin(t*1.2+tr.sway)*2.5;
-    ctx.fillStyle='#1a120a';
-    ctx.fillRect(tr.x-tr.trunkW/2+sw*.3, tr.y-tr.trunkH, tr.trunkW, tr.trunkH);
-    ctx.fillStyle=tr.c;
-    ctx.beginPath(); ctx.arc(tr.x+sw, tr.y-tr.r*.55, tr.r, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle=tr.c2;
-    ctx.beginPath(); ctx.arc(tr.x-tr.r*.28+sw, tr.y-tr.r*.3, tr.r*.72, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(tr.x+tr.r*.3+sw*.6, tr.y-tr.r*.35, tr.r*.65, 0, Math.PI*2); ctx.fill();
-  }
-  ctx.fillStyle='#f0c8a0';
-  ctx.beginPath(); ctx.arc(P.x, P.y-22, 9, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle='#e8a0b0';
-  ctx.beginPath(); ctx.moveTo(P.x,P.y-14); ctx.lineTo(P.x-13,P.y+8); ctx.lineTo(P.x+13,P.y+8); ctx.closePath(); ctx.fill();
-  ctx.fillStyle='#d07888';
-  ctx.fillRect(P.x-13,P.y+4,26,4);
-  for (const f of fireflies){
-    const a=.25+.35*Math.abs(Math.sin(f.phase*3));
-    ctx.fillStyle=`rgba(200,255,160,${a})`;
-    ctx.beginPath(); ctx.arc(f.x,f.y,2.2,0,Math.PI*2); ctx.fill();
-  }
-  ctx.restore();
-  const fog = .55 - prog*.42;
-  if (fog>0){
-    const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.32, W/2,H/2,Math.max(W,H)*.78);
-    vg.addColorStop(0,'rgba(6,16,6,0)');
-    vg.addColorStop(1,`rgba(6,16,6,${fog})`);
-    ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
-  }
-  if (joy.on){
-    ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.arc(joy.sx,joy.sy,50,0,Math.PI*2); ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.35)';
-    ctx.beginPath(); ctx.arc(joy.sx+joy.dx*50, joy.sy+joy.dy*50, 20, 0, Math.PI*2); ctx.fill();
-  }
-}
+            function switchStage(index) {
+                stages.forEach(s => s.classList.remove('active'));
+                stages[index].classList.add('active');
+                currentStage = index;
+                // 滚动到视图
+                stages[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
 
-(function loop(){ update(); draw(); requestAnimationFrame(loop); })();
+            // ==================== 阶段0 → 阶段1 ====================
+            const openSeal = document.getElementById('openSeal');
+            openSeal.addEventListener('click', () => {
+                burstParticles(openSeal);
+                setTimeout(() => {
+                    switchStage(1);
+                }, 400);
+            });
 
-/* ===== 关键修复：按钮点击 ===== */
-function startGame(){
-  if (started) return;
-  ovStart.classList.add('hide');
-  started = true;
-}
+            // ==================== 阶段1：探索光球 ====================
+            const memoryOrbs = document.querySelectorAll('.memory-orb');
+            const revealMessage = document.getElementById('revealMessage');
+            const btnAfterExplore = document.getElementById('btnAfterExplore');
 
-btnStart.addEventListener('click', startGame);
-btnStart.addEventListener('touchend', function(e){
-  e.preventDefault();
-  e.stopPropagation();
-  startGame();
-}, {passive:false});
+            memoryOrbs.forEach(orb => {
+                orb.addEventListener('click', function() {
+                    if (this.classList.contains('revealed')) return;
+                    const idx = parseInt(this.dataset.orb);
+                    this.classList.add('revealed');
+                    revealMessage.innerHTML = orbMessages[idx];
+                    revealMessage.classList.add('visible');
+                    burstParticles(this);
+                    orbsRevealed++;
 
-addEventListener('keydown', e=>{
-  if(e.key===' ' && started && !ended && !dlgOpen) tryAct();
-});
-</script>
+                    if (orbsRevealed >= totalOrbs) {
+                        setTimeout(() => {
+                            revealMessage.innerHTML =
+                                "💫 <span style='color:#d4a853;'>这三件事，只是万千心意的冰山一角……</span>";
+                            btnAfterExplore.style.display = 'inline-block';
+                            btnAfterExplore.scrollIntoView({ behavior: 'smooth' });
+                        }, 600);
+                    }
+                });
+            });
+
+            btnAfterExplore.addEventListener('click', () => {
+                switchStage(2);
+            });
+
+            // ==================== 阶段2：最终表白 ====================
+            const finalHeart = document.getElementById('finalHeart');
+            const btnYes = document.getElementById('btnYes');
+            const btnThink = document.getElementById('btnThink');
+            const responseCard = document.getElementById('responseCard');
+
+            finalHeart.addEventListener('click', () => {
+                burstParticles(finalHeart, 40);
+                // 心形放大抖动
+                finalHeart.style.transform = 'scale(1.4)';
+                setTimeout(() => { finalHeart.style.transform = ''; }, 300);
+            });
+
+            btnYes.addEventListener('click', () => {
+                switchStage(3);
+                responseCard.innerHTML = `
+                    <div style="font-size:4rem;animation:float 2s ease-in-out infinite;">💖</div>
+                    <h2 style="color:#d4a853;margin:1rem 0;letter-spacing:0.1em;">谢谢你</h2>
+                    <p style="line-height:2;color:#e0d5c1;font-size:1.1rem;">
+                        这一刻，星空为我们见证。<br>
+                        我会珍惜这份心意，<br>
+                        用时间去书写属于我们的故事。
+                    </p>
+                    <p style="color:#a09080;margin-top:1rem;font-size:0.9rem;">
+                        —— 2026年9月24日 · 星空之下
+                    </p>
+                `;
+                burstParticles(responseCard, 60);
+                // 全局撒花效果
+                setTimeout(() => burstParticles(responseCard, 50), 500);
+                setTimeout(() => burstParticles(responseCard, 40), 1000);
+            });
+
+            btnThink.addEventListener('click', () => {
+                switchStage(3);
+                responseCard.innerHTML = `
+                    <div style="font-size:4rem;animation:float 2.5s ease-in-out infinite;">🌷</div>
+                    <h2 style="color:#d4a853;margin:1rem 0;letter-spacing:0.1em;">没关系</h2>
+                    <p style="line-height:2;color:#e0d5c1;font-size:1.1rem;">
+                        无论你的答案是什么，<br>
+                        我都感谢你愿意停留在此刻。<br>
+                        这份心意不会改变。
+                    </p>
+                    <p style="color:#a09080;margin-top:1rem;font-size:0.9rem;">
+                        慢慢来，我会一直在这里。
+                    </p>
+                    <button class="btn" onclick="location.reload()" style="margin-top:1rem;">🔄 再看一次</button>
+                `;
+                burstParticles(responseCard, 35);
+            });
+
+            // ==================== 粒子爆发效果 ====================
+            function burstParticles(element, count = 25) {
+                const rect = element.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                const colors = ['#d4a853', '#e8a0bf', '#f0e68c', '#a0c4e8', '#c4a0e8', '#ffb3b3', '#fff'];
+                const fragment = document.createDocumentFragment();
+
+                for (let i = 0; i < count; i++) {
+                    const particle = document.createElement('span');
+                    particle.className = 'particle-burst';
+                    const size = Math.random() * 8 + 4;
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 100 + 40;
+                    const dx = Math.cos(angle) * distance;
+                    const dy = Math.sin(angle) * distance - 40;
+                    particle.style.cssText = `
+                        left:${cx}px;
+                        top:${cy}px;
+                        width:${size}px;
+                        height:${size}px;
+                        border-radius:50%;
+                        background:${colors[Math.floor(Math.random()*colors.length)]};
+                        --dx:${dx}px;
+                        --dy:${dy}px;
+                        position:fixed;
+                        pointer-events:none;
+                        z-index:100;
+                        animation:burstUp ${Math.random()*0.8+0.9}s ease-out forwards;
+                    `;
+                    fragment.appendChild(particle);
+                }
+                document.body.appendChild(fragment);
+
+                setTimeout(() => {
+                    const particles = document.querySelectorAll('.particle-burst');
+                    particles.forEach(p => p.remove());
+                }, 1800);
+            }
+
+            // ==================== 初始状态 ====================
+            console.log('💫 星空表白页面已就绪');
+            console.log('👆 点击火漆印章开始这段探索吧~');
+            console.log('💝 愿每一份真心都被温柔以待。');
+
+        })();
+    </script>
 </body>
 </html>
